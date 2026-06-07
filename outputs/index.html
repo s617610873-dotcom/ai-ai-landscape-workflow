@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 景观方案PPT生成工作流</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden}
+body{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.8;color:rgba(255,255,255,0.88);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-gradient{background:linear-gradient(175deg,#0a0a0a 0%,#0d1f18 30%,#12271f 50%,#1a2d22 65%,#1e2b20 80%,#1c1a14 100%)}
+.bg-noise{opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px 256px}
+.bg-glow{background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(34,120,80,0.08) 0%,transparent 70%),radial-gradient(ellipse 40% 50% at 100% 100%,rgba(60,40,20,0.06) 0%,transparent 60%)}
+.content-wrapper{position:relative;z-index:2;min-height:100vh;padding-bottom:120px}
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:100px 24px 60px;text-align:center;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(255,255,255,0.08);border-radius:100px;font-size:12px;font-weight:500;letter-spacing:0.06em;color:rgba(255,255,255,0.35);font-family:"Inter",system-ui,sans-serif;margin-bottom:24px;background:rgba(255,255,255,0.03)}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3eb882}
+.hero h1{font-size:clamp(26px,5vw,48px);font-weight:700;line-height:1.25;letter-spacing:-0.02em;color:#f0f0f0;max-width:720px;margin-bottom:14px}
+.hero p{font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,0.45);max-width:600px;line-height:1.7;margin-bottom:28px;font-weight:300}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.hero-meta-item{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;font-size:12px;color:rgba(255,255,255,0.4);font-family:"Inter",system-ui,sans-serif}
+.hero-meta-item svg{width:14px;height:14px;opacity:0.5;flex-shrink:0}
+.article-container{max-width:800px;margin:0 auto;padding:0 24px}
+.article{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:clamp(24px,4vw,48px) clamp(20px,3.5vw,44px);margin-bottom:60px}
+
+/* article typography */
+.article h1{font-size:clamp(20px,3.2vw,30px);font-weight:700;line-height:1.35;margin-bottom:6px;letter-spacing:-0.02em;color:#f0f0f0}
+.article .subtitle{font-size:clamp(13px,1.4vw,14px);color:rgba(255,255,255,0.35);margin-bottom:28px;line-height:1.7;font-weight:300}
+.article h2{font-size:clamp(17px,2vw,21px);font-weight:600;margin-top:40px;margin-bottom:14px;line-height:1.4;color:rgba(255,255,255,0.92);padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px}
+.article h2::before{content:"";display:inline-block;width:3px;height:18px;border-radius:2px;background:linear-gradient(to bottom,#3eb882,#2d9a6a);flex-shrink:0}
+.article h3{font-size:clamp(15px,1.6vw,17px);font-weight:600;margin-top:24px;margin-bottom:10px;line-height:1.4;color:#3eb882}
+.article h4{font-size:15px;font-weight:600;margin-top:20px;margin-bottom:8px;color:rgba(255,255,255,0.8)}
+.article p{margin-bottom:14px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article a{color:#3eb882;text-decoration:underline;text-underline-offset:3px}
+.article a:hover{color:#5ad49a}
+.article strong{font-weight:600;color:rgba(255,255,255,0.9)}
+.article blockquote{border-left:3px solid #3eb882;background:rgba(62,184,130,0.06);margin:16px 0;padding:14px 20px;border-radius:0 8px 8px 0;font-size:clamp(13px,1.3vw,14.5px);color:rgba(255,255,255,0.6);word-break:break-word}
+.article blockquote p{margin-bottom:0;color:inherit}
+
+/* CODE BLOCKS - auto wrap */
+.article pre{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px 18px;font-size:clamp(12px,1.15vw,13.5px);line-height:1.6;font-family:"Noto Sans Mono","Consolas",monospace;margin:16px 0;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word;overflow:hidden}
+.article pre code{background:none;padding:0;font-size:inherit;white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word}
+.article :not(pre)>code{background:rgba(62,184,130,0.1);padding:2px 7px;border-radius:4px;font-size:0.87em;font-family:"Noto Sans Mono","Consolas",monospace;color:#5ad49a;word-break:break-word}
+
+/* TABLES - wrap content */
+.article table{width:100%;border-collapse:collapse;margin:16px 0;font-size:clamp(12px,1.15vw,14px);border-radius:10px;overflow:hidden;word-break:break-word;table-layout:fixed}
+.article thead tr{background:rgba(255,255,255,0.04)}
+.article th{font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:clamp(11px,1.05vw,13px);color:rgba(255,255,255,0.55)}
+.article td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;line-height:1.6;color:rgba(255,255,255,0.7);word-break:break-word}
+.article tbody tr:hover td{background:rgba(255,255,255,0.02)}
+.article hr{border:none;height:1px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.08),transparent);margin:24px 0}
+.article ul,.article ol{margin:10px 0 14px 18px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article li{margin-bottom:4px}
+.article ul li::marker{color:#3eb882;opacity:0.5}
+
+/* CONTROL BAR - static */
+.control-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;height:80px;background:rgba(10,10,10,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 -4px 24px rgba(0,0,0,0.4);display:flex;align-items:center;padding:0 16px}
+.control-bar-inner{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,18px);width:100%;max-width:600px;margin:0 auto}
+.control-progress{flex:1;min-width:60px;max-width:160px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden}
+.control-progress-fill{height:100%;width:30%;border-radius:2px;background:linear-gradient(90deg,#3eb882,#5ad49a);position:relative}
+.control-progress-fill::after{content:"";position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#3eb882}
+.ctrl-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;border-radius:6px}
+.ctrl-btn:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.06)}
+.ctrl-btn svg{width:clamp(18px,2.2vw,22px);height:clamp(18px,2.2vw,22px);stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.ctrl-btn.play-btn svg{width:clamp(22px,2.8vw,28px);height:clamp(22px,2.8vw,28px)}
+.ctrl-speed{font-size:11px;font-weight:600;font-family:"Inter",system-ui,sans-serif;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:3px 7px;cursor:pointer;line-height:1}
+.ctrl-speed:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.08)}
+
+/* RESPONSIVE */
+@media(max-width:768px){.control-bar{height:60px;padding:0 10px}.control-bar-inner{gap:6px}.control-progress{max-width:100px}.hero{min-height:50vh;padding:80px 20px 50px}.article-container{padding:0 14px}.article{padding:20px 16px;border-radius:12px}}
+@media(min-width:769px)and(max-width:1024px){.control-bar{height:70px}}
+@media(min-width:1025px){.control-bar{height:80px}}
+@media(min-width:1600px){.article-container{max-width:900px}.hero h1{max-width:860px}}
+@media(max-width:400px){.hero h1{font-size:22px}}
+::selection{background:rgba(62,184,130,0.3);color:#fff}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="bg-layer bg-gradient"></div>
+<div class="bg-layer bg-noise"></div>
+<div class="bg-layer bg-glow"></div>
+<div class="content-wrapper">
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Workflow v1.0</div>
+    <h1>AI 景观方案PPT生成工作流</h1>
+    <p>从PDF分析到图像生成，再到WPS合稿，三组对话构建完整的方案生产管线</p>
+    <div class="hero-meta">
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M12 3L3 7.5v9L12 21l9-4.5v-9L12 3z"/><path d="M12 12L3 7.5"/><path d="M12 12v9"/><path d="M12 12l9-4.5"/></svg>核心工具：ChatGPT + GPT Image 2</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>每张图出双版本</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>WPS 用 B 版纯图叠文字</span>
+    </div>
+  </section>
+  <div class="article-container">
+    <article class="article">
+
+
+<h1>AI 景观方案PPT生成工作流</h1>
+<p class="subtitle">核心工具：ChatGPT（文本分析）+ GPT Image 2（出图）&nbsp;·&nbsp; 出图方法：每张图出双版本（A版带文字 / B版纯图）&nbsp;·&nbsp; 合稿方式：WPS 用 B 版纯图叠原生文本框</p>
+
+<p>好，我把全部内容汇总成一个完整版本。每个阶段都标明了是否开新对话，以及为什么。</p>
+
+<hr>
+
+<h2 id="s1">一、整体架构</h2>
+
+<p>三个对话 + WPS 合稿，形成完整的方案生产管线：</p>
+
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                                                                    │
+│  ┌─ 对话1：PDF 分析 ──────────────────────────────────────────┐   │
+│  │  上传参考方案PDF → 01模板 → 框架描述.txt                     │   │
+│  │  上传项目PDF     → 02模板 → 项目数据.txt                     │   │
+│  └────────────────────────────────────────────────────────────┘   │
+│                              │                                     │
+│                              ▼                                     │
+│  ┌─ 对话2：小流程出图 ─────────────────────────────────────────┐   │
+│  │  03模板 + 项目数据 → 5类图纸的AB双版提示词                     │   │
+│  │  → 逐张出图 → S01_B ~ S05_B + S01_A ~ S05_A                  │   │
+│  └────────────────────────────────────────────────────────────┘   │
+│                              │                                     │
+│                              ▼                                     │
+│  ┌─ 对话3：大流程内容 + 补图 ─────────────────────────────────┐   │
+│  │  04模板（含显式映射）→ 完整分页内容 + 复用标记                 │   │
+│  │  05模板 → 仅处理"需新出图"页面的AB双版提示词                  │   │
+│  │  → 逐张出补图 → 命名 P01_A~P01_B  ...                        │   │
+│  └────────────────────────────────────────────────────────────┘   │
+│                              │                                     │
+│                              ▼                                     │
+│  WPS 合稿：小流程 S 图 + 大流程 P 图 → B版纯图 + A版排版参考     │
+│                                                                    │
+└──────────────────────────────────────────────────────────────────┘</code></pre>
+
+<h2 id="s2">二、配方库（5 个模板文件）</h2>
+
+<h3 id="s2-1">文件1：01_提取参考方案框架.txt</h3>
+<p><strong>用途</strong>：从参考方案 PDF 提取完整文档结构和文本风格。<br>
+<strong>使用场景</strong>：对话1，上传 PDF 后直接发。</p>
+
+<pre><code>请分析我上传的这套完整的景观设计方案PDF（含所有页面），
+按以下权重顺序提取参考框架，输出纯文本，不要markdown标记。
+
+第一部分：文档结构（权重最高，必须完整）
+- 总共有多少页
+- 逐页列出：页码 + 页面类型
+  （封面/目录/设计概念/总平面图/分析图/节点效果图/剖面图/植物配置/小品设施/区位分析/人群分析/专项设计/封底/其他）
+- 每页的内容组合方式（纯图/图+文字/图+表格/多图拼版……）
+- 页面之间的逻辑衔接关系
+
+第二部分：文本框架与叙事风格（权重高）
+- 设计说明的撰写结构（总-分-总/概念先行/问题导向）
+- 段落长度和句式特征（长段落描述/短句要点/编号条款）
+- 专业术语的使用风格（偏学术/偏通俗/偏感性）
+- 每个章节的标题风格（动词开头/名词短语/问句）
+- 典型段落的开头句式
+
+第三部分：页面排版特征（权重中）
+- 图文比例（每页图占多少、文字占多少）
+- 文字块的位置规律
+- 图片的呈现方式（满版出血/带白边/带标注/带图例）
+
+第四部分：视觉风格特征（权重低，简要提取）
+- 色彩主调
+- 渲染风格
+- 主要字体
+- 代表性设计语汇
+
+注意：
+- 图片页标注[图片页：描述画面内容]
+- 优先保证文档结构的完整性
+- 输出纯文本，不要markdown标记</code></pre>
+
+<hr>
+
+<h3 id="s2-2">文件2：02_提取项目数据.txt</h3>
+<p><strong>用途</strong>：从项目 PDF 提取结构化数据。<br>
+<strong>使用场景</strong>：对话1，接着上一条消息发。</p>
+
+<pre><code>请从以下项目PDF的文字内容中提取景观设计所需的关键信息，
+按下面10个字段输出纯文本（每行一个字段，不要任何格式标记、不要列表符号）：
+
+1. 项目名称：
+2. 红线面积（ha）：
+3. 建筑布局简述（建筑数量、层高、主要出入口）：
+4. 场地竖向高差（多少米、坡向）：
+5. 地下车库出入口位置：
+6. 硬景/软景比例（若有）：
+7. 主要使用人群：
+8. 周边环境（道路、河道、相邻建筑等）：
+9. 设计限制条件（管线、退线、古树、保留建筑等）：
+10. 甲方特殊要求（风格偏好、造价限额、工期等）：
+
+【项目PDF文字内容】
+（粘贴项目PDF导出的纯文本）</code></pre>
+
+<hr>
+
+<h3 id="s2-3">文件3：03_小流程出图指令.txt</h3>
+<p><strong>用途</strong>：生成小流程5类核心图纸的 AB 双版提示词。<br>
+<strong>使用场景</strong>：对话2，粘贴项目数据后发。</p>
+
+<pre><code>请基于以下【项目数据】和【参考框架（可选）】，生成一套景观设计核心图纸
+的 GPT Image 2 提示词（英文）。
+
+每张图出两个版本：
+- Version A：带标注/图例/文字说明的交付版
+- Version B：纯图版，无文字，用作WPS素材
+
+以下 S 标签用于后续大流程引用，请在每个提示词前标注：
+[S01] [S02] [S03] [S04] [S05]
+
+图纸清单：
+
+图1 [S01]：现状平面图
+- 基于项目实地条件生成航拍或CAD底图风格的现状平面
+- 标注红线范围、周边道路、相邻建筑
+- Version A：red line boundary, labeled surrounding roads and buildings, site area noted
+- Version B：same composition, remove all labels and text
+
+图2 [S02]：彩平图（大色块功能分区）
+- 大色块清晰区分绿化/硬化/交通/活动区/水景
+- 纯色填充，边缘清晰，不要渐变
+- 有初步路网骨架
+- Version A：color legend in corner, zone labels in Chinese
+- Version B：same color blocks, remove legend and labels
+
+图3 [S03]：总平面图（细化方案）
+- 在彩平基础上细化植物组团、铺装示意、小品位置、水景形态
+- 增加细节层次和材质示意
+- Version A：complete with legend, scale bar, north arrow, labels in Chinese
+- Version B：same detailed plan, remove all annotations
+
+图4 [S04]：分析图（交通分析/景观结构分析/竖向分析）
+- 根据项目特征选择最需要的分析类型
+- 用箭头、色带、符号表达分析逻辑
+- Version A：clear legend, arrow annotations, analysis labels in Chinese
+- Version B：same analysis graphic, remove text
+
+图5 [S05]：效果图/鸟瞰图（核心节点）
+- 选取方案中最具代表性的节点
+- 人视点或鸟瞰，根据节点特征决定
+- Version A：project name overlay, design concept label
+- Version B：same rendering, no text overlay
+
+技术要求：
+- 5张图的色调和渲染风格保持一致
+- 分辨率适配16:9 PPT页面
+
+【项目数据】
+（粘贴文件02输出的项目数据）
+
+【参考框架（可选）】
+（如果有，粘贴文件01输出的框架描述）</code></pre>
+
+<hr>
+
+<h3 id="s2-4">文件4：04_生成大流程分页内容.txt（含显式映射）</h3>
+<p><strong>用途</strong>：生成完整汇报PPT的每页内容，并与小流程图纸做映射。<br>
+<strong>使用场景</strong>：对话3，粘贴框架+数据+映射规则后发。</p>
+
+<pre><code>=== 第一步：图纸映射（必做） ===
+
+以下是小流程的5类图纸标签，每个标签代表一张成品图，
+B版是纯图素材，A版是带文字的设计确认稿：
+
+S01 = 现状平面图
+S02 = 彩平图（大色块功能分区）
+S03 = 总平面图（细化方案）
+S04 = 分析图（交通/结构/竖向）
+S05 = 效果图/鸟瞰图
+
+请根据【参考方案框架】的页面结构，逐页判断并输出映射结果：
+
+PAGE 1：[页面类型] → [复用 S0X_B.png，参考 S0X_A.png / 需新出图]
+PAGE 2：...
+（以此类推，覆盖框架中的每一页）
+
+=== 第二步：内容生成（基于映射结果） ===
+
+对于标注"复用"的页面：
+- 只需输出该页的文字内容（标题+正文+图注）
+- 不要生成图片描述
+
+对于标注"需新出图"的页面：
+- 输出完整文字内容
+- 同时输出图片描述（画面内容、构图建议）
+
+整体要求：
+- 严格遵循【参考方案框架】的文档结构
+- 叙事风格模仿参考方案
+- 内容用【项目数据】替换
+- 每页用 ---PAGE BREAK--- 分隔
+- 输出纯文本
+
+【参考方案框架】
+（粘贴文件01输出的框架描述）
+
+【项目数据】
+（粘贴文件02输出的项目数据）</code></pre>
+
+<hr>
+
+<h3 id="s2-5">文件5：05_大流程补图提示词.txt</h3>
+<p><strong>用途</strong>：仅对标注"需新出图"的页面生成 AB 双版提示词。<br>
+<strong>使用场景</strong>：对话3，紧接着上一条消息发（同一个对话）。</p>
+
+<pre><code>以下是【大流程分页内容】中所有标注"需新出图"的页面清单。
+请为每一页生成一对 GPT Image 2 提示词（英文），每对包含：
+- Version A：文字直接烤在图中的完整方案页
+- Version B：纯图版，无文字
+
+已经在小流程中完成的图纸（不需要再生成）：
+S01_现状平面图
+S02_彩平图
+S03_总平面图
+S04_分析图
+S05_效果图/鸟瞰图
+
+需要新出图的页面清单：
+[由04输出的"需新出图"页面列表]
+
+命名规则（后续WPS识别用）：
+P01 = 封面
+P02 = 设计概念
+P03 = 区位分析
+...以此类推
+
+要求：
+1. Version A 提示词尾部加：
+   "The image is a complete presentation slide, with Chinese text rendered clearly."
+2. Version B 提示词写：
+   "same composition, no text, no labels, only the visual content"
+3. 所有新出图的风格与小流程 S01-S05 保持一致
+   （色彩主调、渲染方式、排版风格）
+
+输出格式：
+[P01] 封面
+Version A prompt：...
+Version B prompt：...
+
+[P02] 设计概念
+Version A prompt：...
+Version B prompt：...
+
+【大流程分页内容】
+（粘贴文件04输出的完整方案分页文本）</code></pre>
+
+<h2 id="s3">三、三组对话的规划</h2>
+
+<h3 id="s3-1">对话1：PDF 分析</h3>
+<table>
+<thead>
+<tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr>
+</thead>
+<tbody>
+<tr><td>上传参考方案PDF + 发01模板</td><td><strong>新对话 1</strong></td><td>上传文件需要干净上下文，避免被之前的对话干扰</td></tr>
+<tr><td>在同一对话里，上传项目PDF + 发02模板</td><td>不另开</td><td>同一个分析会话，上下文延续</td></tr>
+<tr><td>下载保存：<code>框架描述.txt</code> + <code>项目数据.txt</code></td><td>—</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3 id="s3-2">对话2：小流程出图（核心设计图）</h3>
+<table>
+<thead>
+<tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr>
+</thead>
+<tbody>
+<tr><td>粘贴项目数据 + 发03模板</td><td><strong>新对话 2</strong></td><td>从文本分析切换到图像生成，上下文的思维模式完全不同</td></tr>
+<tr><td>AI 返回5对提示词（S01-S05）</td><td>不另开</td><td>同一个会话</td></tr>
+<tr><td>逐张出图：先出 A 版确认，满意后再出 B 版</td><td>不另开</td><td>逐张在会话里完成</td></tr>
+<tr><td>下载保存：S01_A ~ S05_A + S01_B ~ S05_B</td><td>—</td><td>—</td></tr>
+<tr><td>如果 AI 返回的提示词不满意，直接在同一个对话里让 AI 修改</td><td>不另开</td><td>修改依赖上下文</td></tr>
+</tbody>
+</table>
+
+<h3 id="s3-3">对话3：大流程内容 + 补图</h3>
+<table>
+<thead>
+<tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr>
+</thead>
+<tbody>
+<tr><td>粘贴框架 + 项目数据 + 发04模板</td><td><strong>新对话 3</strong></td><td>切换到方案内容规划，和小流程对话隔离</td></tr>
+<tr><td>AI 完成映射 + 输出完整分页内容</td><td>不另开</td><td>—</td></tr>
+<tr><td>下载保存：<code>方案分页文本.txt</code></td><td>—</td><td>—</td></tr>
+<tr><td>继续同一个对话，粘贴方案分页文本 + 发05模板</td><td><strong>不另开</strong></td><td>05 依赖 04 的映射结果，开新对话 AI 就不知道映射关系了</td></tr>
+<tr><td>AI 返回补图提示词</td><td>不另开</td><td>—</td></tr>
+<tr><td>逐张出补图（P01-P0N）</td><td>不另开</td><td>—</td></tr>
+<tr><td>下载保存：P01_A ~ P0N_A + P01_B ~ P0N_B</td><td>—</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3 id="s3-4">WPS 合稿（离线）</h3>
+<table>
+<thead>
+<tr><th>操作</th></tr>
+</thead>
+<tbody>
+<tr><td>打开 WPS，新建 PPT</td></tr>
+<tr><td>先铺小流程 B 版图：S01_B、S02_B、S03_B、S04_B、S05_B</td></tr>
+<tr><td>参考对应 A 版的排版，在 B 版上叠原生文本框</td></tr>
+<tr><td>再铺大流程补图 B 版：P01_B、P02_B……</td></tr>
+<tr><td>参考对应 A 版的排版，叠文字</td></tr>
+<tr><td>套用你公司的 PPT 母版</td></tr>
+<tr><td>微调字体、字号、位置，增删页</td></tr>
+</tbody>
+</table>
+
+<h2 id="s4">四、一句话理清对话策略</h2>
+
+<blockquote>
+<p><strong>对话1 只读</strong> → 读参考方案、读项目数据 → 输出文本</p>
+</blockquote>
+
+<p><strong>开新对话</strong></p>
+
+<blockquote>
+<p><strong>对话2 只画</strong> → 画小流程5张核心图 → 输出 AB 双版 PNG</p>
+</blockquote>
+
+<p><strong>开新对话</strong></p>
+
+<blockquote>
+<p><strong>对话3 先规划再补画</strong> → 先做映射 + 生成分页内容 → <strong>同一个对话里</strong>接着补画大流程缺的页面 → 输出方案文本 + AB 双版 PNG</p>
+</blockquote>
+
+<p><strong>对话3 不能分裂</strong>——因为05依赖于04的映射结果，一旦开新对话，AI 就忘了哪些页面需要补图、哪些已经由小流程覆盖了。</p>
+
+
+    </article>
+  </div>
+</div>
+<div class="control-bar">
+  <div class="control-bar-inner">
+    <button class="ctrl-btn" aria-label="关闭"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <button class="ctrl-btn" aria-label="后退5秒"><svg viewBox="0 0 24 24"><polyline points="19 5 14 5 11 8"/><path d="M14 5a8 8 0 1 1-7.5 5.5"/><path d="M3 3v6h6"/></svg></button>
+    <button class="ctrl-btn play-btn" aria-label="播放/暂停"><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg></button>
+    <button class="ctrl-btn" aria-label="前进5秒"><svg viewBox="0 0 24 24"><polyline points="5 5 10 5 13 8"/><path d="M10 5a8 8 0 1 0 7.5 5.5"/><path d="M21 3v6h-6"/></svg></button>
+    <span class="ctrl-speed">1x</span>
+    <div class="control-progress"><div class="control-progress-fill"></div></div>
+  </div>
+</div>
+</body>
+</html>
