@@ -1,58 +1,106 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head>
+<html lang="zh-CN">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 景观方案PPT生成工作流 - 最终版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  background: #1a1a2e;
-  color: #d0d0e0;
-  font-family: -apple-system, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  padding: 40px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-h1 { font-size: 22px; color: #c0c0f0; margin: 32px 0 8px; text-align: center; }
-h2 { font-size: 18px; color: #b0b0e0; margin: 28px 0 8px; border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
-h3 { font-size: 15px; color: #a0a0d0; margin: 20px 0 6px; }
-p { margin: 8px 0; }
-strong { color: #e0e0ff; }
-em { color: #a0a0c0; }
-code {
-  background: #2a2a4a; color: #b0b0e0;
-  padding: 1px 6px; border-radius: 3px;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 13px;
-}
-pre{white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word;overflow:hidden;
-  background: #16162a; border: 1px solid #2a2a4a;
-  border-left: 3px solid #5a5aaa; border-radius: 4px;
-  padding: 14px 16px; margin: 10px 0; overflow-x: auto;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 13px; line-height: 1.6; color: #c0c0e0;
-}
-blockquote {
-  border-left: 3px solid #5a5aaa; padding: 8px 16px; margin: 12px 0;
-  background: #1e1e38; color: #a0a0c0;
-}
-table { border-collapse: collapse; margin: 12px 0; font-size: 13px; width: 100%; }
-th,td{word-break:break-word; border: 1px solid #2a2a4a; padding: 6px 12px; text-align: left; }
-th { background: #2a2a4a; color: #b0b0d0; font-weight: 600; }
-td { color: #c0c0d0; }
-ul, ol { padding-left: 24px; margin: 6px 0; }
-li { margin: 3px 0; }
-hr { border: none; border-top: 1px solid #2a2a4a; margin: 20px 0; }
-a { color: #7c7cd4; text-decoration: none; }
-a:hover { color: #a0a0e0; text-decoration: underline; }
-.tag { display: inline-block; background: #2a2a4a; color: #888; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-right: 4px; }
-.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 24px; }
-</style>
-<style>.tb{position:fixed;top:0;left:0;right:0;background:#16162a;border-bottom:1px solid #2a2a4a;padding:8px 20px;display:flex;align-items:center;gap:10px;z-index:999}.tb .l{color:#7c7cd4;font-weight:700;font-size:14px}.tb .b{background:#2a2a4a;border:none;color:#ccc;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px}.tb .b:hover{background:#3a3a6a;color:#fff}.tb .bp{background:#4a4a8a;color:#eee}.tb .bp:hover{background:#5a5aaa}.tb .s{color:#666;font-size:12px;margin-left:auto}body{padding-top:48px!important}[contenteditable=true]:focus{outline:1px dashed #5a5aaa}[contenteditable=true]:hover{outline:1px dashed #3a3a6a}</style></head>
-<body contenteditable="true"><div class="tb"><span class="l">Codex 工作流</span><button class="b bp" onclick="te()">预览模式</button><button class="b" onclick="sv()">保存</button><span class="s" id="st">只读模式</span></div><script>var ie=false;function te(){ie=!ie;document.body.contentEditable=ie;document.getElementById("st").textContent=ie?"编辑中... 点选文字直接修改":"只读模式";document.querySelector(".tb .bp").textContent=ie?"预览模式":"编辑模式"}function sv(){var h="<!DOCTYPE html>\n"+document.documentElement.outerHTML;var b=new Blob([h],{type:"text/html;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="最终.html";a.click();document.getElementById("st").textContent="已保存";setTimeout(function(){document.getElementById("st").textContent=ie?"编辑中...":"只读模式"},1500)}document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();sv()}});</script>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden}
+body{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.8;color:rgba(255,255,255,0.88);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-gradient{background:linear-gradient(175deg,#0a0a0a 0%,#0d1f18 30%,#12271f 50%,#1a2d22 65%,#1e2b20 80%,#1c1a14 100%)}
+.bg-noise{opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px 256px}
+.bg-glow{background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(34,120,80,0.08) 0%,transparent 70%),radial-gradient(ellipse 40% 50% at 100% 100%,rgba(60,40,20,0.06) 0%,transparent 60%)}
+.content-wrapper{position:relative;z-index:2;min-height:100vh;padding-bottom:120px}
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:100px 24px 60px;text-align:center;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(255,255,255,0.08);border-radius:100px;font-size:12px;font-weight:500;letter-spacing:0.06em;color:rgba(255,255,255,0.35);font-family:"Inter",system-ui,sans-serif;margin-bottom:24px;background:rgba(255,255,255,0.03)}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3eb882}
+.hero h1{font-size:clamp(26px,5vw,48px);font-weight:700;line-height:1.25;letter-spacing:-0.02em;color:#f0f0f0;max-width:720px;margin-bottom:14px}
+.hero p{font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,0.45);max-width:600px;line-height:1.7;margin-bottom:28px;font-weight:300}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.hero-meta-item{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;font-size:12px;color:rgba(255,255,255,0.4);font-family:"Inter",system-ui,sans-serif}
+.hero-meta-item svg{width:14px;height:14px;opacity:0.5;flex-shrink:0}
+.article-container{max-width:800px;margin:0 auto;padding:0 24px}
+.article{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:clamp(24px,4vw,48px) clamp(20px,3.5vw,44px);margin-bottom:60px}
 
+/* article typography */
+.article h1{font-size:clamp(20px,3.2vw,30px);font-weight:700;line-height:1.35;margin-bottom:6px;letter-spacing:-0.02em;color:#f0f0f0}
+.article .subtitle{font-size:clamp(13px,1.4vw,14px);color:rgba(255,255,255,0.35);margin-bottom:28px;line-height:1.7;font-weight:300}
+.article h2{font-size:clamp(17px,2vw,21px);font-weight:600;margin-top:40px;margin-bottom:14px;line-height:1.4;color:rgba(255,255,255,0.92);padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px}
+.article h2::before{content:"";display:inline-block;width:3px;height:18px;border-radius:2px;background:linear-gradient(to bottom,#3eb882,#2d9a6a);flex-shrink:0}
+.article h3{font-size:clamp(15px,1.6vw,17px);font-weight:600;margin-top:24px;margin-bottom:10px;line-height:1.4;color:#3eb882}
+.article p{margin-bottom:14px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article a{color:#3eb882;text-decoration:underline;text-underline-offset:3px}
+.article a:hover{color:#5ad49a}
+.article strong{font-weight:600;color:rgba(255,255,255,0.9)}
+.article em{color:rgba(255,255,255,0.6)}
+.article blockquote{border-left:3px solid #3eb882;background:rgba(62,184,130,0.06);margin:16px 0;padding:14px 20px;border-radius:0 8px 8px 0;font-size:clamp(13px,1.3vw,14.5px);color:rgba(255,255,255,0.6);word-break:break-word}
+.article blockquote p{margin-bottom:0;color:inherit}
+
+/* CODE BLOCKS - auto wrap */
+.article pre{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px 18px;font-size:clamp(12px,1.15vw,13.5px);line-height:1.6;font-family:"Noto Sans Mono","Consolas",monospace;margin:16px 0;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word;overflow:hidden}
+.article pre code{background:none;padding:0;font-size:inherit;white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word}
+.article :not(pre)>code{background:rgba(62,184,130,0.1);padding:2px 7px;border-radius:4px;font-size:0.87em;font-family:"Noto Sans Mono","Consolas",monospace;color:#5ad49a;word-break:break-word}
+
+/* TABLES - wrap content */
+.article table{width:100%;border-collapse:collapse;margin:16px 0;font-size:clamp(12px,1.15vw,14px);border-radius:10px;overflow:hidden;word-break:break-word;table-layout:fixed}
+.article thead tr{background:rgba(255,255,255,0.04)}
+.article th{font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:clamp(11px,1.05vw,13px);color:rgba(255,255,255,0.55)}
+.article td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;line-height:1.6;color:rgba(255,255,255,0.7);word-break:break-word}
+.article tbody tr:hover td{background:rgba(255,255,255,0.02)}
+.article hr{border:none;height:1px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.08),transparent);margin:24px 0}
+.article ul,.article ol{margin:10px 0 14px 18px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article li{margin-bottom:4px}
+.article ul li::marker{color:#3eb882;opacity:0.5}
+
+.article .tag{display:inline-block;background:rgba(62,184,130,0.12);color:#5ad49a;font-size:11px;padding:2px 10px;border-radius:10px;margin-right:4px}
+
+/* CONTROL BAR - static */
+.control-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;height:80px;background:rgba(10,10,10,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 -4px 24px rgba(0,0,0,0.4);display:flex;align-items:center;padding:0 16px}
+.control-bar-inner{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,18px);width:100%;max-width:600px;margin:0 auto}
+.control-progress{flex:1;min-width:60px;max-width:160px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden}
+.control-progress-fill{height:100%;width:30%;border-radius:2px;background:linear-gradient(90deg,#3eb882,#5ad49a);position:relative}
+.control-progress-fill::after{content:"";position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#3eb882}
+.ctrl-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;border-radius:6px}
+.ctrl-btn:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.06)}
+.ctrl-btn svg{width:clamp(18px,2.2vw,22px);height:clamp(18px,2.2vw,22px);stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.ctrl-btn.play-btn svg{width:clamp(22px,2.8vw,28px);height:clamp(22px,2.8vw,28px)}
+.ctrl-speed{font-size:11px;font-weight:600;font-family:"Inter",system-ui,sans-serif;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:3px 7px;cursor:pointer;line-height:1}
+.ctrl-speed:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.08)}
+
+/* RESPONSIVE */
+@media(max-width:768px){.control-bar{height:60px;padding:0 10px}.control-bar-inner{gap:6px}.control-progress{max-width:100px}.hero{min-height:50vh;padding:80px 20px 50px}.article-container{padding:0 14px}.article{padding:20px 16px;border-radius:12px}}
+@media(min-width:769px)and(max-width:1024px){.control-bar{height:70px}}
+@media(min-width:1025px){.control-bar{height:80px}}
+@media(min-width:1600px){.article-container{max-width:900px}.hero h1{max-width:860px}}
+@media(max-width:400px){.hero h1{font-size:22px}}
+::selection{background:rgba(62,184,130,0.3);color:#fff}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="bg-layer bg-gradient"></div>
+<div class="bg-layer bg-noise"></div>
+<div class="bg-layer bg-glow"></div>
+<div class="content-wrapper">
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Workflow v1.0</div>
+    <h1>AI 景观方案PPT生成工作流</h1>
+    <p>从PDF分析到图像生成，再到WPS合稿，三组对话构建完整的方案生产管线</p>
+    <div class="hero-meta">
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M12 3L3 7.5v9L12 21l9-4.5v-9L12 3z"/><path d="M12 12L3 7.5"/><path d="M12 12v9"/><path d="M12 12l9-4.5"/></svg>核心工具：ChatGPT + GPT Image 2</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>每张图出双版本</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>WPS 用 B 版纯图叠文字</span>
+    </div>
+  </section>
+  <div class="article-container">
+    <article class="article">
 <h1>AI 景观方案PPT生成工作流</h1>
 <p class="subtitle">修订日期：2026-06-07 | 核心工具：ChatGPT + GPT Image 2 | 合稿方式：WPS</p>
 
@@ -307,7 +355,18 @@ Step 2：确认后出 Version B
 
 <hr>
 <p style="text-align:center;color:#555;font-size:12px;margin-top:32px;">点右上角"编辑模式"在线修改，Ctrl+S 保存</p>
-
-
-
-</body></html>
+    </article>
+  </div>
+</div>
+<div class="control-bar">
+  <div class="control-bar-inner">
+    <button class="ctrl-btn" aria-label="关闭"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <button class="ctrl-btn" aria-label="后退5秒"><svg viewBox="0 0 24 24"><polyline points="19 5 14 5 11 8"/><path d="M14 5a8 8 0 1 1-7.5 5.5"/><path d="M3 3v6h6"/></svg></button>
+    <button class="ctrl-btn play-btn" aria-label="播放/暂停"><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg></button>
+    <button class="ctrl-btn" aria-label="前进5秒"><svg viewBox="0 0 24 24"><polyline points="5 5 10 5 13 8"/><path d="M10 5a8 8 0 1 0 7.5 5.5"/><path d="M21 3v6h-6"/></svg></button>
+    <span class="ctrl-speed">1x</span>
+    <div class="control-progress"><div class="control-progress-fill"></div></div>
+  </div>
+</div>
+</body>
+</html>
