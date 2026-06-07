@@ -1,0 +1,389 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>AI 景观方案PPT生成工作流</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* RESET */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:16px;line-height:1.8;
+  color:rgba(255,255,255,0.88);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;min-height:100vh;
+}
+/* BACKGROUND LAYERS (parallax) */
+.bg-layer{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  will-change:transform,filter;
+}
+.bg-gradient{
+  background:linear-gradient(175deg,#0a0a0a 0%,#0d1f18 30%,#12271f 50%,#1a2d22 65%,#1e2b20 80%,#1c1a14 100%);
+}
+.bg-noise{
+  opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:256px 256px;
+}
+.bg-glow{
+  background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(34,120,80,0.08) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 50% at 100% 100%,rgba(60,40,20,0.06) 0%,transparent 60%);
+}
+/* SCROLL BLUR */
+.scroll-blur-overlay{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);
+  transition:backdrop-filter 0.3s ease-out;will-change:backdrop-filter;
+}
+/* CONTENT */
+.content-wrapper{position:relative;z-index:2;min-height:100vh;padding-bottom:140px;will-change:transform}
+/* HERO */
+.hero{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:70vh;padding:120px 24px 80px;text-align:center;position:relative;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border:1px solid rgba(255,255,255,0.08);
+  border-radius:100px;font-size:12px;font-weight:500;
+  letter-spacing:0.06em;color:rgba(255,255,255,0.35);
+  font-family:'Inter',system-ui,sans-serif;margin-bottom:28px;
+  background:rgba(255,255,255,0.03);
+}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3eb882;animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.hero h1{
+  font-size:clamp(28px,5vw,52px);font-weight:700;line-height:1.25;
+  letter-spacing:-0.02em;
+  background:linear-gradient(135deg,#f0f0f0 0%,#b8d4c8 50%,#e8dcc8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;max-width:720px;margin-bottom:16px;
+}
+.hero p{
+  font-size:clamp(14px,2vw,18px);color:rgba(255,255,255,0.45);
+  max-width:600px;line-height:1.7;margin-bottom:32px;font-weight:300;
+}
+.hero-meta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.hero-meta-item{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+  font-size:12px;color:rgba(255,255,255,0.4);
+  font-family:'Inter',system-ui,sans-serif;
+}
+.hero-meta-item svg{width:14px;height:14px;opacity:0.5;flex-shrink:0}
+.scroll-indicator{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0.3;animation:si-float 2.5s ease-in-out infinite;
+}
+.scroll-indicator span{font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,0.3);font-family:'Inter',system-ui,sans-serif}
+.scroll-indicator-line{width:1px;height:28px;background:linear-gradient(to bottom,rgba(255,255,255,0.3),transparent)}
+@keyframes si-float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+/* ARTICLE */
+.article-container{max-width:800px;margin:0 auto;padding:0 24px}
+.article{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;padding:clamp(28px,4vw,56px) clamp(24px,3.5vw,48px);
+  backdrop-filter:blur(2px);margin-bottom:60px;
+}
+.article h1{
+  font-size:clamp(22px,3.2vw,32px);font-weight:700;line-height:1.35;
+  margin-bottom:6px;letter-spacing:-0.02em;
+  background:linear-gradient(135deg,#f0f0f0 0%,#b8d4c8 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.article .subtitle{
+  font-size:clamp(13px,1.4vw,15px);color:rgba(255,255,255,0.35);
+  margin-bottom:32px;line-height:1.7;font-weight:300;
+}
+.article h2{
+  font-size:clamp(17px,2vw,21px);font-weight:600;margin-top:44px;
+  margin-bottom:16px;line-height:1.4;letter-spacing:-0.01em;
+  color:rgba(255,255,255,0.92);padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:10px;
+}
+.article h2::before{
+  content:'';display:inline-block;width:3px;height:18px;border-radius:2px;
+  background:linear-gradient(to bottom,#3eb882,#2d9a6a);flex-shrink:0;
+}
+.article h3{font-size:clamp(15px,1.6vw,17px);font-weight:600;margin-top:28px;margin-bottom:10px;line-height:1.4;color:#3eb882}
+.article p{margin-bottom:16px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article a{color:#3eb882;text-decoration:underline;text-underline-offset:3px;transition:color 0.2s}
+.article a:hover{color:#5ad49a}
+.article strong{font-weight:600;color:rgba(255,255,255,0.9)}
+.article blockquote{
+  border-left:3px solid #3eb882;background:rgba(62,184,130,0.06);
+  margin:20px 0;padding:16px 24px;border-radius:0 8px 8px 0;
+  font-size:clamp(13.5px,1.3vw,14.5px);color:rgba(255,255,255,0.6);
+}
+.article blockquote p{margin-bottom:0;color:inherit}
+.article pre{
+  background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;padding:clamp(14px,2vw,20px) clamp(16px,2.5vw,24px);
+  overflow-x:auto;font-size:clamp(12.5px,1.2vw,13.5px);line-height:1.65;
+  font-family:'Noto Sans Mono','Consolas',monospace;margin:18px 0;
+  color:rgba(255,255,255,0.75);
+}
+.article pre code{background:none;padding:0;font-size:inherit;white-space:pre;tab-size:2}
+.article :not(pre)>code{
+  background:rgba(62,184,130,0.1);padding:2px 8px;border-radius:4px;
+  font-size:0.87em;font-family:'Noto Sans Mono','Consolas',monospace;
+  color:#5ad49a;word-break:break-word;
+}
+.article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:clamp(13px,1.2vw,14px);border-radius:10px;overflow:hidden}
+.article thead tr{background:rgba(255,255,255,0.04)}
+.article th{
+  font-weight:600;text-align:left;padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  font-size:clamp(12px,1.1vw,13px);letter-spacing:0.02em;
+  color:rgba(255,255,255,0.55);
+}
+.article td{
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:top;line-height:1.65;color:rgba(255,255,255,0.7);
+}
+.article tbody tr:hover td{background:rgba(255,255,255,0.02)}
+.article hr{
+  border:none;height:1px;
+  background:linear-gradient(to right,transparent,rgba(255,255,255,0.08),transparent);
+  margin:32px 0;
+}
+.article ul,.article ol{margin:12px 0 16px 20px;line-height:1.85;color:rgba(255,255,255,0.72)}
+.article li{margin-bottom:4px}
+.article ul li::marker{color:#3eb882;opacity:0.5}
+/* CONTROL BAR */
+.control-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;height:80px;
+  background:rgba(10,10,10,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,0.06);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 -4px 24px rgba(0,0,0,0.4);
+  display:flex;align-items:center;padding:0 16px;
+  transition:transform 0.4s ease-in-out,opacity 0.4s ease-in-out;
+  will-change:transform,opacity;
+}
+.control-bar-inner{
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(8px,2vw,20px);width:100%;max-width:600px;margin:0 auto;
+}
+.control-progress{flex:1;min-width:60px;max-width:200px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden}
+.control-progress-fill{height:100%;width:30%;border-radius:2px;background:linear-gradient(90deg,#3eb882,#5ad49a);position:relative}
+.control-progress-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#3eb882;box-shadow:0 0 8px rgba(62,184,130,0.5)}
+.ctrl-btn{
+  background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  padding:6px;border-radius:6px;transition:all 0.2s;
+}
+.ctrl-btn:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.06)}
+.ctrl-btn:active{transform:scale(0.92)}
+.ctrl-btn svg{width:clamp(18px,2.2vw,22px);height:clamp(18px,2.2vw,22px);stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.ctrl-btn.play-btn svg{width:clamp(22px,2.8vw,28px);height:clamp(22px,2.8vw,28px)}
+.ctrl-speed{
+  font-size:11px;font-weight:600;font-family:'Inter',system-ui,sans-serif;
+  color:rgba(255,255,255,0.4);letter-spacing:0.04em;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+  border-radius:4px;padding:3px 7px;cursor:pointer;transition:all 0.2s;line-height:1;
+}
+.ctrl-speed:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.08)}
+.ctrl-speed.active{color:#3eb882;border-color:rgba(62,184,130,0.3)}
+.control-bar.scrolled-down{transform:translateY(100%) scale(0.9);opacity:0.1;pointer-events:none}
+.control-bar.scrolled-up{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .control-bar{height:60px;padding:0 10px}
+  .control-bar-inner{gap:6px}
+  .control-progress{max-width:100px}
+  .hero{min-height:60vh;padding:100px 20px 60px}
+  .article-container{padding:0 16px}
+  .article{padding:24px 18px;border-radius:12px}
+}
+@media(min-width:769px)and(max-width:1024px){.control-bar{height:70px}}
+@media(min-width:1025px){.control-bar{height:80px}}
+@media(min-width:1600px){.article-container{max-width:900px}.hero h1{max-width:860px}}
+@media(max-width:400px){.hero{min-height:50vh}.hero h1{font-size:24px}.scroll-indicator{display:none}}
+/* SCROLLBAR */
+::selection{background:rgba(62,184,130,0.3);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="bg-layer bg-gradient" id="bgGradient"></div>
+<div class="bg-layer bg-noise" id="bgNoise"></div>
+<div class="bg-layer bg-glow" id="bgGlow"></div>
+<div class="scroll-blur-overlay" id="scrollBlur"></div>
+<div class="content-wrapper" id="contentWrapper">
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Workflow v1.0</div>
+    <h1>AI 景观方案PPT生成工作流</h1>
+    <p>从PDF分析到图像生成，再到WPS合稿，三组对话构建完整的方案生产管线</p>
+    <div class="hero-meta">
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M12 3L3 7.5v9L12 21l9-4.5v-9L12 3z"/><path d="M12 12L3 7.5"/><path d="M12 12v9"/><path d="M12 12l9-4.5"/></svg>核心工具：ChatGPT + GPT Image 2</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>每张图出双版本</span>
+      <span class="hero-meta-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>WPS 用 B 版纯图叠文字</span>
+    </div>
+    <div class="scroll-indicator"><div class="scroll-indicator-line"></div><span>SCROLL</span></div>
+  </section>
+  <div class="article-container">
+    <article class="article">
+      <h1>AI 景观方案PPT生成工作流</h1>
+      <p class="subtitle">核心工具：ChatGPT（文本分析）+ GPT Image 2（出图）· 出图方法：每张图出双版本（A版带文字 / B版纯图）· 合稿方式：WPS 用 B 版纯图叠原生文本框</p>
+      <p>好，我把全部内容汇总成一个完整版本。每个阶段都标明了是否开新对话，以及为什么。</p>
+      <hr>
+      <h2 id="s1">一、整体架构</h2>
+      <p>三个对话 + WPS 合稿，形成完整的方案生产管线：</p>
+      <pre><code>┌─ 对话1: PDF 分析 ──────────────────────────────────────────┐
+│ 上传参考方案PDF→01模板→框架描述.txt / 上传项目PDF→02模板→项目数据.txt │
+└──────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─ 对话2: 小流程出图 ─────────────────────────────────────────┐
+│ 03模板+项目数据→5类图纸AB双版→逐张出图→S01_B~S05_B+S01_A~S05_A │
+└──────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─ 对话3: 大流程内容+补图 ────────────────────────────────────┐
+│ 04模板→分页内容 → 05模板→补图提示词→P01_A~P0N_B              │
+└──────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+                    WPS 合稿: B版纯图+A版排版参考</code></pre>
+      <h2 id="s2">二、配方库（5 个模板文件）</h2>
+      <h3 id="s2-1">文件1：01_提取参考方案框架.txt</h3>
+      <p><strong>用途</strong>：从参考方案 PDF 提取完整文档结构和文本风格。<br><strong>使用场景</strong>：对话1，上传 PDF 后直接发。</p>
+      <pre><code>请分析我上传的这套完整的景观设计方案PDF（含所有页面），
+按以下权重顺序提取参考框架，输出纯文本，不要markdown标记。
+
+第一部分：文档结构（权重最高，必须完整）
+- 总共有多少页
+- 逐页列出：页码 + 页面类型
+  （封面/目录/设计概念/总平面图/分析图/节点效果图/剖面图/植物配置/小品设施/区位分析/人群分析/专项设计/封底/其他）</code></pre>
+      <h3 id="s2-2">文件2：02_提取项目数据.txt</h3>
+      <p><strong>用途</strong>：从项目 PDF 提取结构化数据。<br><strong>使用场景</strong>：对话1，接着上一条消息发。</p>
+      <pre><code>请从以下项目PDF的文字内容中提取景观设计所需的关键信息，
+按下面10个字段输出纯文本（每行一个字段，不要任何格式标记、不要列表符号）：
+1. 项目名称：2. 红线面积（ha）：3. 建筑布局简述：...</code></pre>
+      <h3 id="s2-3">文件3：03_小流程出图指令.txt</h3>
+      <p><strong>用途</strong>：生成小流程5类核心图纸的 AB 双版提示词。<br><strong>使用场景</strong>：对话2，粘贴项目数据后发。</p>
+      <pre><code>请基于以下【项目数据】和【参考框架（可选）】，生成一套景观设计核心图纸
+的 GPT Image 2 提示词（英文）。每张图出两个版本：
+- Version A：带标注/图例/文字说明的交付版
+- Version B：纯图版，无文字，用作WPS素材</code></pre>
+      <h3 id="s2-4">文件4：04_生成大流程分页内容.txt</h3>
+      <p><strong>用途</strong>：生成完整汇报PPT的每页内容，并与小流程图纸做映射。<br><strong>使用场景</strong>：对话3，粘贴框架+数据+映射规则后发。</p>
+      <pre><code>=== 第一步：图纸映射（必做） ===
+S01=现状平面图 S02=彩平图 S03=总平面图 S04=分析图 S05=效果图/鸟瞰图
+逐页判断：PAGE N → 复用 S0X_B / 需新出图</code></pre>
+      <h3 id="s2-5">文件5：05_大流程补图提示词.txt</h3>
+      <p><strong>用途</strong>：仅对标注"需新出图"的页面生成 AB 双版提示词。<br><strong>使用场景</strong>：对话3，紧接着上一条消息发。</p>
+      <pre><code>为每一页"需新出图"页面生成一对 GPT Image 2 提示词（英文）
+Version A：完整方案页含中文文字
+Version B：纯图版，无文字</code></pre>
+      <hr>
+      <h2 id="s3">三、三组对话的规划</h2>
+      <h3 id="s3-1">对话1：PDF 分析</h3>
+      <table>
+        <thead><tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>上传参考方案PDF + 发01模板</td><td><strong>新对话 1</strong></td><td>上传文件需要干净上下文</td></tr>
+          <tr><td>上传项目PDF + 发02模板</td><td>不另开</td><td>同一个分析会话</td></tr>
+          <tr><td>下载保存</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <h3 id="s3-2">对话2：小流程出图</h3>
+      <table>
+        <thead><tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>粘贴项目数据 + 发03模板</td><td><strong>新对话 2</strong></td><td>从分析切换到图像生成</td></tr>
+          <tr><td>逐张出图及修改</td><td>不另开</td><td>修改依赖上下文</td></tr>
+        </tbody>
+      </table>
+      <h3 id="s3-3">对话3：大流程内容 + 补图</h3>
+      <table>
+        <thead><tr><th>操作</th><th>开新对话？</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>粘贴框架 + 数据 + 04模板</td><td><strong>新对话 3</strong></td><td>切换到方案内容规划</td></tr>
+          <tr><td>继续发05模板</td><td><strong>不另开</strong></td><td>05依赖04的映射结果</td></tr>
+        </tbody>
+      </table>
+      <h3 id="s3-4">WPS 合稿（离线）</h3>
+      <table><thead><tr><th>操作</th></tr></thead><tbody>
+        <tr><td>新建PPT → 铺B版图 → 叠原生文本框 → 套母版 → 微调</td></tr>
+      </tbody></table>
+      <h2 id="s4">四、一句话理清对话策略</h2>
+      <blockquote><p><strong>对话1 只读</strong> → 读参考方案、读项目数据 → 输出文本</p></blockquote>
+      <p><strong>开新对话</strong></p>
+      <blockquote><p><strong>对话2 只画</strong> → 画小流程5张核心图 → 输出 AB 双版 PNG</p></blockquote>
+      <p><strong>开新对话</strong></p>
+      <blockquote><p><strong>对话3 先规划再补画</strong> → 先做映射+分页内容 → 同一个对话里补画缺的页面</p></blockquote>
+      <blockquote><p><strong>对话3 不能分裂</strong>——05依赖04的映射结果，开新对话AI就忘了</p></blockquote>
+    </article>
+  </div>
+</div>
+<div class="control-bar" id="controlBar">
+  <div class="control-bar-inner">
+    <button class="ctrl-btn" aria-label="关闭"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <button class="ctrl-btn" aria-label="后退5秒"><svg viewBox="0 0 24 24"><polyline points="19 5 14 5 11 8"/><path d="M14 5a8 8 0 1 1-7.5 5.5"/><path d="M3 3v6h6"/></svg></button>
+    <button class="ctrl-btn play-btn" aria-label="播放/暂停"><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg></button>
+    <button class="ctrl-btn" aria-label="前进5秒"><svg viewBox="0 0 24 24"><polyline points="5 5 10 5 13 8"/><path d="M10 5a8 8 0 1 0 7.5 5.5"/><path d="M21 3v6h-6"/></svg></button>
+    <span class="ctrl-speed" id="speedBtn">1×</span>
+    <div class="control-progress"><div class="control-progress-fill"></div></div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  const bgGradient=document.getElementById('bgGradient'),bgNoise=document.getElementById('bgNoise'),
+        contentEl=document.getElementById('contentWrapper'),scrollBlur=document.getElementById('scrollBlur'),
+        controlBar=document.getElementById('controlBar');
+  let lastScrollY=0,velocityFrames=[],scrollTimeout=null;
+  function updateParallax(){
+    const sy=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+    if(bgGradient)bgGradient.style.transform='translateY('+(sy*0.2)+'px)';
+    if(bgNoise)bgNoise.style.transform='translateY('+(sy*0.5)+'px)';
+    if(contentEl)contentEl.style.transform='translateY('+(sy*0.8)+'px)';
+    const now=Date.now();
+    velocityFrames.push({y:sy,t:now});
+    if(velocityFrames.length>5)velocityFrames.shift();
+    let scrollVelocity=0;
+    if(velocityFrames.length>=2){
+      const dt=(velocityFrames[velocityFrames.length-1].t-velocityFrames[0].t)/1000;
+      const dy=Math.abs(velocityFrames[velocityFrames.length-1].y-velocityFrames[0].y);
+      scrollVelocity=dt>0?dy/dt:0;
+    }
+    const baseBlur=dh>0?Math.min((sy/dh)*5,5):0;
+    const motionBlur=Math.min(scrollVelocity/300,3);
+    if(scrollBlur){scrollBlur.style.backdropFilter='blur('+(baseBlur+motionBlur)+'px)';scrollBlur.style.webkitBackdropFilter='blur('+(baseBlur+motionBlur)+'px)'}
+    const delta=sy-lastScrollY;
+    if(Math.abs(delta)>3){
+      if(delta>0){controlBar.classList.remove('scrolled-up');controlBar.classList.add('scrolled-down')}
+      else{controlBar.classList.remove('scrolled-down');controlBar.classList.add('scrolled-up')}
+    }
+    clearTimeout(scrollTimeout);
+    scrollTimeout=setTimeout(function(){
+      const sy2=window.scrollY,dh2=document.documentElement.scrollHeight-window.innerHeight;
+      const b2=dh2>0?Math.min((sy2/dh2)*5,5):0;
+      if(scrollBlur){scrollBlur.style.transition='backdrop-filter 0.3s ease-out';scrollBlur.style.backdropFilter='blur('+b2+'px)';scrollBlur.style.webkitBackdropFilter='blur('+b2+'px)';setTimeout(function(){if(scrollBlur)scrollBlur.style.transition=''},350)}
+    },300);
+    lastScrollY=sy;
+  }
+  let ticking=false;
+  window.addEventListener('scroll',function(){if(!ticking){window.requestAnimationFrame(function(){updateParallax();ticking=false});ticking=true}},{passive:true});
+  const speedBtn=document.getElementById('speedBtn'),speeds=['1×','1.5×','2×'];let speedIndex=0;
+  if(speedBtn)speedBtn.addEventListener('click',function(){speedIndex=(speedIndex+1)%speeds.length;speedBtn.textContent=speeds[speedIndex];speedBtn.classList.toggle('active',speedIndex>0)});
+  const playBtn=document.querySelector('.play-btn');let isPlaying=true;
+  if(playBtn)playBtn.addEventListener('click',function(){isPlaying=!isPlaying;if(isPlaying){playBtn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg>'}else{playBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg>'}});
+  updateParallax();
+})();
+</script>
+</body>
+</html>
